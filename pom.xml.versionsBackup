@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2022 Kaiserpfalz EDV-Service, Roland T. Lichti
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.kaiserpfalz-edv.services</groupId>
+    <artifactId>kp-fileserver</artifactId>
+    <version>2.2.0</version>
+    <packaging>pom</packaging>
+
+    <name>KP Fileserver</name>
+    <description>
+        A fileserver running on kubernetes to manage files and provide them as web service.
+    </description>
+
+    <modules>
+        <module>kp-fileserver-api</module>
+        <module>kp-fileserver-service</module>
+        <module>kp-fileserver-client</module>
+    </modules>
+
+    <scm>
+        <url>https://github.com/Paladins-Inn/kp-fileserver</url>
+        <connection>scm:git:git://github.com/Paladins-Inn/kp-fileserver.git</connection>
+        <developerConnection>scm:git:git@github.com:Paladins-Inn/kp-fileserver.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>kp-fileserver</id>
+            <name>GitHub Packages for kp-fileserver</name>
+            <url>https://maven.pkg.github.com/Paladins-Inn/kp-fileserver</url>
+        </repository>
+    </distributionManagement>
+
+
+    <profiles>
+        <profile>
+            <id>production</id>
+        </profile>
+
+        <profile>
+            <id>release</id>
+
+            <distributionManagement>
+                <repository>
+                    <id>github</id>
+                    <name>GitHub Packages</name>
+                    <url>https://maven.pkg.github.com/Paladins-Inn/kp-fileserver</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+
+        <profile>
+            <id>site</id>
+
+            <properties>
+                <maven.javadoc.skip>true</maven.javadoc.skip>
+            </properties>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-site-plugin</artifactId>
+                        <version>3.12.1</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-project-info-reports-plugin</artifactId>
+                        <version>3.3.0</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-report-plugin</artifactId>
+                        <version>3.0.0-M7</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.4.0</version>
+                        <configuration>
+                            <skip>${maven.javadoc.skip}</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <skip>${maven.javadoc.skip}</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </reporting>
+        </profile>
+    </profiles>
+</project>
