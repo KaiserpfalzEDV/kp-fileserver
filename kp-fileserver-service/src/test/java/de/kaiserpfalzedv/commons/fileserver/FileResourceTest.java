@@ -24,7 +24,10 @@ import de.kaiserpfalzedv.commons.core.resources.Pointer;
 import de.kaiserpfalzedv.commons.core.resources.Status;
 import de.kaiserpfalzedv.commons.core.user.User;
 import de.kaiserpfalzedv.commons.test.AbstractTestBase;
-import de.kaiserpfalzedv.fileserver.model.client.File;
+import de.kaiserpfalzedv.fileserver.model.File;
+import de.kaiserpfalzedv.fileserver.model.client.FileData;
+import de.kaiserpfalzedv.fileserver.model.client.FileDescription;
+import de.kaiserpfalzedv.fileserver.service.FileResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -63,8 +66,8 @@ import static org.hamcrest.Matchers.not;
 @Slf4j
 public class FileResourceTest extends AbstractTestBase {
     private static final UUID UPDATEABLE_UUID = UUID.fromString("39062d79-e1a9-437a-b1b4-7dc783bd9eb2");
-    private static final String UPDATEABLE_NAMESPACE = "name.namespace";
-    private static final String UPDATEABLE_NAME = "name.name";
+    private static final String UPDATABLE_NAMESPACE = "name.namespace";
+    private static final String UPDATABLE_NAME = "name.name";
 
     private RestAssuredConfig restAssuredConfig;
 
@@ -111,7 +114,7 @@ public class FileResourceTest extends AbstractTestBase {
 
     @Test
     @TestSecurity(user = "user", roles = "user")
-    public void shouldNotFindTheFileWhenNameisInvalid() {
+    public void shouldNotFindTheFileWhenNameIsInvalid() {
         startTest("failed-retrieve-by-unknown-name");
 
         given()
@@ -123,7 +126,7 @@ public class FileResourceTest extends AbstractTestBase {
 
     @Test
     @TestSecurity(user = "user", roles = "user")
-    public void shouldNotFindTheFileWhenNameSpaceisInvalid() {
+    public void shouldNotFindTheFileWhenNameSpaceIsInvalid() {
         startTest("failed-retrieve-by-unknown-namespace");
 
         given()
@@ -139,7 +142,7 @@ public class FileResourceTest extends AbstractTestBase {
     public void shouldSaveTheFileWhenNotExisting() {
         startTest("save-owned-file");
 
-        File request = File.builder()
+        File request = de.kaiserpfalzedv.fileserver.model.client.File.builder()
                 .metadata(
                         Metadata.builder()
                                 .identity(
@@ -205,7 +208,7 @@ public class FileResourceTest extends AbstractTestBase {
                 .as(File.class);
 //                .contentType(ContentType.JSON).extract().jsonPath().peek().get();
 
-        log.info("Result. data=", result);
+        log.info("Result. data={}", result);
         entityUid = result.getUid();
 
         log.info("Result. id={}, data={}", entityUid, result);
@@ -217,15 +220,15 @@ public class FileResourceTest extends AbstractTestBase {
     public void shouldUpdateTheFileWhenUserMatch() {
         startTest("update-owned-file");
 
-        File request = File.builder()
+        File request = de.kaiserpfalzedv.fileserver.model.client.File.builder()
                 .metadata(
                         Metadata.builder()
                                 .identity(
                                         Pointer.builder()
                                                 .kind(File.KIND)
                                                 .apiVersion(File.API_VERSION)
-                                                .nameSpace(UPDATEABLE_NAMESPACE)
-                                                .name(UPDATEABLE_NAME)
+                                                .nameSpace(UPDATABLE_NAMESPACE)
+                                                .name(UPDATABLE_NAME)
                                                 .build()
                                 )
                                 .owner(
@@ -298,12 +301,12 @@ public class FileResourceTest extends AbstractTestBase {
     @Order(3)
     @TestSecurity(user = "user", roles = "user")
     public void shouldDeleteTheUserWhenNameSpaceAndNameIsGiven() {
-        startTest("delete-by-namespace-and-name", UPDATEABLE_NAMESPACE, UPDATEABLE_NAME);
+        startTest("delete-by-namespace-and-name", UPDATABLE_NAMESPACE, UPDATABLE_NAME);
         given()
             .when()
                 .contentType(ContentType.JSON)
-                .pathParam("nameSpace", UPDATEABLE_NAMESPACE)
-                .pathParam("name", UPDATEABLE_NAME)
+                .pathParam("nameSpace", UPDATABLE_NAMESPACE)
+                .pathParam("name", UPDATABLE_NAME)
                 .delete("/{nameSpace}/{name}")
                 .prettyPeek()
             .then()

@@ -19,8 +19,8 @@ package de.kaiserpfalzedv.fileserver.model.client;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import de.kaiserpfalzedv.commons.core.resources.Metadata;
-import de.kaiserpfalzedv.commons.core.resources.Resource;
+import de.kaiserpfalzedv.commons.core.resources.ResourceImpl;
+import de.kaiserpfalzedv.fileserver.model.FileData;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -30,7 +30,6 @@ import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -49,15 +48,25 @@ import java.util.Optional;
 @Slf4j
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @Schema(description = "A file saved in the system.")
-public class File extends Resource<FileData> implements de.kaiserpfalzedv.fileserver.model.File {
+public class File extends ResourceImpl<FileData> implements de.kaiserpfalzedv.fileserver.model.File {
 
     private static final int[] FULL_PERMISSION = {6, 6, 6};
     private static final int[] NO_PERMISSION = {0, 0, 0};
 
     @Override
+    public de.kaiserpfalzedv.fileserver.model.FileDescription getFile() {
+        return getSpec().getFile();
+    }
+
+    @Override
+    public de.kaiserpfalzedv.fileserver.model.FileDescription getPreview() {
+        return getSpec().getPreview();
+    }
+
+    @Override
     @JsonIgnore
-    public Optional<String> getOwner() {
-        return getMetadata().getAnnotation(ANNOTATION_OWNER);
+    public String getOwner() {
+        return getMetadata().getAnnotation(ANNOTATION_OWNER).orElse("unspecified");
     }
 
     @Override
@@ -83,43 +92,5 @@ public class File extends Resource<FileData> implements de.kaiserpfalzedv.filese
                 Integer.parseInt(permissions.substring(1, 2), 10),
                 Integer.parseInt(permissions.substring(2, 3), 10)
         };
-    }
-
-
-
-
-    public static <C extends File, B extends File.FileBuilder<C, B>> FileBuilder<C, B> of(final String nameSpace, final String name) {
-        //noinspection unchecked
-        return (FileBuilder<C, B>) File.builder()
-                .metadata(
-                        Metadata.of(KIND, API_VERSION, nameSpace, name)
-                                .build()
-                );
-    }
-
-    public static <C extends File, B extends File.FileBuilder<C, B>> FileBuilder<C, B> of(
-            final String nameSpace,
-            final String name,
-            final Map<String, String> annotations,
-            final Map<String, String> labels
-    ) {
-        //noinspection unchecked
-        return (FileBuilder<C, B>) File.builder()
-                .metadata(
-                        Metadata.of(KIND, API_VERSION, nameSpace, name)
-                                .annotations(annotations)
-                                .labels(labels)
-                                .build()
-                );
-    }
-
-    @Override
-    public String getSelfLink() {
-        return null;
-    }
-
-    @Override
-    public Resource<FileData> increaseGeneration() {
-        return null;
     }
 }

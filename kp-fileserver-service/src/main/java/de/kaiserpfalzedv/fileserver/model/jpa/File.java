@@ -17,19 +17,25 @@
 
 package de.kaiserpfalzedv.fileserver.model.jpa;
 
-import de.kaiserpfalzedv.commons.core.jpa.AbstractJPAEntity;
+import de.kaiserpfalzedv.commons.core.resources.Resource;
+import de.kaiserpfalzedv.commons.core.resources.Status;
+import de.kaiserpfalzedv.commons.jpa.AbstractJPAEntity;
 import de.kaiserpfalzedv.commons.core.resources.Metadata;
 import de.kaiserpfalzedv.commons.core.resources.Pointer;
+import de.kaiserpfalzedv.fileserver.model.FileData;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * JPAFile -- A file saved inside the database (normally image files).
@@ -47,6 +53,10 @@ import java.util.Map;
                 @UniqueConstraint(name = "FILES_NAME_UK", columnNames = {"NAMESPACE", "NAME"})
         }
 )
+@Schema(
+        title = "File",
+        description = "A single file with its meta data"
+)
 @Jacksonized
 @SuperBuilder(toBuilder = true)
 @AllArgsConstructor
@@ -57,29 +67,73 @@ import java.util.Map;
 public class File extends AbstractJPAEntity implements de.kaiserpfalzedv.fileserver.model.File {
     public static final int MAX_FILE_LENGTH = 16_777_215;
 
+    @Schema(
+            description = "A namespace of the resource",
+            required = true,
+            minLength = VALID_NAME_MIN_LENGTH,
+            maxLength = VALID_NAME_MAX_LENGTH,
+            example = VALID_NAME_EXAMPLE,
+            pattern = VALID_NAME_PATTERN
+    )
     @Column(name = "NAMESPACE", length = VALID_NAME_MAX_LENGTH, nullable = false)
     @NotNull
-    @Size(min = VALID_NAME_MIN_LENGTH, max = VALID_NAME_MAX_LENGTH)
+    @Size(min = VALID_NAME_MIN_LENGTH, max = VALID_NAME_MAX_LENGTH, message = VALID_NAME_LENGTH_MSG)
+    @Pattern(regexp = VALID_NAME_PATTERN, message = VALID_NAME_PATTERN_MSG)
     private String nameSpace;
 
+    @Schema(
+            description = "The name of the resource",
+            required = true,
+            minLength = VALID_NAME_MIN_LENGTH,
+            maxLength = VALID_NAME_MAX_LENGTH,
+            example = VALID_NAME_EXAMPLE,
+            pattern = VALID_NAME_PATTERN
+    )
     @Column(name = "NAME", length = VALID_NAME_MAX_LENGTH, nullable = false)
     @NotNull
-    @Size(min = VALID_NAME_MIN_LENGTH, max = VALID_NAME_MAX_LENGTH)
+    @Size(min = VALID_NAME_MIN_LENGTH, max = VALID_NAME_MAX_LENGTH, message = VALID_NAME_LENGTH_MSG)
+    @Pattern(regexp = VALID_NAME_PATTERN, message = VALID_NAME_PATTERN_MSG)
     private String name;
 
+    @Schema(
+            description = "The owner of the resource",
+            required = true,
+            minLength = VALID_NAME_MIN_LENGTH,
+            maxLength = VALID_NAME_MAX_LENGTH,
+            example = VALID_NAME_EXAMPLE,
+            pattern = VALID_NAME_PATTERN
+    )
     @Column(name = "OWNER", length = VALID_NAME_MAX_LENGTH, nullable = false)
     @NotNull
-    @Size(min = VALID_NAME_MIN_LENGTH, max = VALID_NAME_MAX_LENGTH)
+    @Size(min = VALID_NAME_MIN_LENGTH, max = VALID_NAME_MAX_LENGTH, message = VALID_NAME_LENGTH_MSG)
+    @Pattern(regexp = VALID_NAME_PATTERN, message = VALID_NAME_PATTERN_MSG)
     private String owner;
 
+    @Schema(
+            description = "The group of the owner of the resource",
+            required = true,
+            minLength = VALID_NAME_MIN_LENGTH,
+            maxLength = VALID_NAME_MAX_LENGTH,
+            example = VALID_NAME_EXAMPLE,
+            pattern = VALID_NAME_PATTERN
+    )
     @Column(name = "GRP", length = VALID_NAME_MAX_LENGTH, nullable = false)
+    @Size(min = VALID_NAME_MIN_LENGTH, max = VALID_NAME_MAX_LENGTH, message = VALID_NAME_LENGTH_MSG)
+    @Pattern(regexp = VALID_NAME_PATTERN, message = VALID_NAME_PATTERN_MSG)
     @Builder.Default
-    @Size(min = VALID_NAME_MIN_LENGTH, max = VALID_NAME_MAX_LENGTH)
     private String group = "unspecified";
 
+    @Schema(
+            description = "The permissions as a string with 3 numbers following the posix idea.",
+            minLength = 3,
+            maxLength = 3,
+            example = "620",
+            pattern= "^[0246]{3}"
+    )
     @Column(name = "PERMISSIONS", length = 3, nullable = false)
-    @Builder.Default
     @Size(min = 3, max = 3)
+    @Pattern(regexp = "^[0246]{3}", message = "The variable must consist of the digits 0, 2, 4, or 6.")
+    @Builder.Default
     private String permissions = "620";
 
     @Embedded
@@ -106,10 +160,10 @@ public class File extends AbstractJPAEntity implements de.kaiserpfalzedv.fileser
         group = orig.getMetadata().getAnnotation(ANNOTATION_GROUP).orElse(null);
         permissions = orig.getMetadata().getAnnotation(ANNOTATION_PERMISSIONS).orElse(DEFAULT_PERMISSION);
 
-        file = new FileDescription(orig.getFile().getFile());
+        file = new FileDescription(orig.getFile());
 
-        if (orig.getFile().getPreview() != null) {
-            preview = new FileDescription(orig.getFile().getPreview());
+        if (orig.getPreview() != null) {
+            preview = new FileDescription(orig.getPreview());
         }
     }
 
@@ -130,6 +184,19 @@ public class File extends AbstractJPAEntity implements de.kaiserpfalzedv.fileser
                 .build();
     }
 
+    public int[] getPermissions() {
+        return new int[] {
+                Integer.valueOf(permissions.substring(0,1)),
+                Integer.valueOf(permissions.substring(1,1)),
+                Integer.valueOf(permissions.substring(2,1))
+        };
+    }
+
+    public Optional<String> getGroup() {
+        return Optional.ofNullable(group);
+    }
+
+
     private Map<String, String> generateAnnotations() {
         HashMap<String, String> result = new HashMap<>();
 
@@ -143,5 +210,27 @@ public class File extends AbstractJPAEntity implements de.kaiserpfalzedv.fileser
     @Override
     public File clone() {
         return toBuilder().build();
+    }
+
+    @Override
+    public Resource<FileData> increaseGeneration() {
+        return toBuilder()
+                .version(version++)
+                .build();
+    }
+
+    @Override
+    public FileData getSpec() {
+        return de.kaiserpfalzedv.fileserver.model.jpa.FileData.builder()
+                .file(file)
+                .preview(preview)
+                .build();
+    }
+
+    @Override
+    public Status getStatus() {
+        return Status.builder()
+                .observedGeneration(version)
+                .build();
     }
 }

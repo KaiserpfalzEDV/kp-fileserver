@@ -132,15 +132,16 @@ public class FileService {
 
     @Transactional
     public File update(
+            @NotNull final UUID id,
             @NotNull final File input,
             @NotNull final Principal principal,
             @NotNull final Set<String> roles
     ) {
         log.info("Updating file. uuid='{}', namespace='{}', name='{}'",
-                input.getMetadata().getUid(), input.getNameSpace(), input.getName()
+                id, input.getNameSpace(), input.getName()
         );
 
-        File stored = repository.findById(input.getMetadata().getUid());
+        File stored = repository.findById(id);
         if (stored == null) {
             log.warn("Entity with UID does not exist. Creating a new one.");
             return create(input);

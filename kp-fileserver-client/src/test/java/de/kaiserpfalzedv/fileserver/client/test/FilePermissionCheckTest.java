@@ -17,10 +17,12 @@
 
 package de.kaiserpfalzedv.fileserver.client.test;
 
-import de.kaiserpfalzedv.commons.core.files.File;
-import de.kaiserpfalzedv.commons.core.files.FileData;
-import de.kaiserpfalzedv.commons.core.files.FileDescription;
+import de.kaiserpfalzedv.commons.core.resources.Metadata;
+import de.kaiserpfalzedv.commons.core.resources.Pointer;
 import de.kaiserpfalzedv.commons.test.AbstractTestBase;
+import de.kaiserpfalzedv.fileserver.model.client.File;
+import de.kaiserpfalzedv.fileserver.model.client.FileData;
+import de.kaiserpfalzedv.fileserver.model.client.FileDescription;
 import io.quarkus.test.junit.QuarkusTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -58,7 +60,17 @@ public class FilePermissionCheckTest extends AbstractTestBase {
     private static final String FILE_MIMETYPE = MediaType.TEXT_PLAIN;
     private static final byte[] FILE_DATA = "Some content".getBytes(StandardCharsets.UTF_8);
 
-    private static final File SUT = File.of(NAME_SPACE, NAME, ANNOTATIONS, LABELS)
+    private static final File SUT = File.builder()
+                    .metadata(Metadata.builder()
+                            .identity(Pointer.builder()
+                                    .kind(de.kaiserpfalzedv.fileserver.model.File.KIND)
+                                    .apiVersion(de.kaiserpfalzedv.fileserver.model.File.API_VERSION)
+                                    .nameSpace(NAME_SPACE)
+                                    .name(NAME)
+                                    .build())
+                            .annotations(ANNOTATIONS)
+                            .labels(LABELS)
+                            .build())
             .spec(
                     FileData.builder()
                             .file(

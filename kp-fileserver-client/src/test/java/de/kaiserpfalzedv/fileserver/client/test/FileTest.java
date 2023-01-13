@@ -17,12 +17,12 @@
 
 package de.kaiserpfalzedv.fileserver.client.test;
 
-import de.kaiserpfalzedv.commons.core.files.File;
-import de.kaiserpfalzedv.commons.core.files.FileData;
-import de.kaiserpfalzedv.commons.core.files.FileDescription;
 import de.kaiserpfalzedv.commons.core.resources.Metadata;
 import de.kaiserpfalzedv.commons.core.resources.Pointer;
 import de.kaiserpfalzedv.commons.test.AbstractTestBase;
+import de.kaiserpfalzedv.fileserver.model.client.File;
+import de.kaiserpfalzedv.fileserver.model.client.FileData;
+import de.kaiserpfalzedv.fileserver.model.client.FileDescription;
 import io.quarkus.test.junit.QuarkusTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;

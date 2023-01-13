@@ -19,7 +19,7 @@ package de.kaiserpfalzedv.fileserver.service;
 
 import de.kaiserpfalzedv.commons.core.api.About;
 import de.kaiserpfalzedv.commons.core.resources.HasName;
-import de.kaiserpfalzedv.commons.core.rest.HttpErrorGenerator;
+import de.kaiserpfalzedv.commons.rest.HttpErrorGenerator;
 import de.kaiserpfalzedv.fileserver.model.jpa.File;
 import io.quarkus.security.identity.SecurityIdentity;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirements;
-import org.jboss.resteasy.annotations.cache.NoCache;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -61,7 +60,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @ApplicationScoped
-@Path("/api/file/v1")
+@Path("/api/file/")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @OpenAPIDefinition(
@@ -107,7 +106,6 @@ public class FileResource {
     @GET
     @Path("/")
     @RolesAllowed({"user", "admin"})
-    @NoCache
     @Operation(
             summary = "List all files available.",
             description = "Returns a list of files."
@@ -175,7 +173,6 @@ public class FileResource {
     }
 
 
-    @NoCache
     @POST
     @RolesAllowed({"user", "admin"})
     @Operation(
@@ -203,6 +200,7 @@ public class FileResource {
         try {
             return service.create(new File(input));
         } catch (javax.persistence.EntityExistsException cause) {
+            log.warn(cause.getMessage(), cause);
             throw errorGenerator.throwHttpProblem(
                     Response.Status.CONFLICT,
                     "Either UUID or NameSpace+Name already taken",
@@ -213,6 +211,7 @@ public class FileResource {
                     )
             );
         } catch (PessimisticLockException cause) {
+            log.warn(cause.getMessage(), cause);
             throw errorGenerator.throwHttpProblem(
                     Response.Status.INTERNAL_SERVER_ERROR,
                     "The data set has been changed by another transaction",
@@ -223,6 +222,7 @@ public class FileResource {
                     )
             );
         } catch (RuntimeException cause) {
+            log.warn(cause.getMessage(), cause);
             throw errorGenerator.throwHttpProblem(
                     Response.Status.INTERNAL_SERVER_ERROR,
                     cause.getMessage(),
@@ -236,8 +236,8 @@ public class FileResource {
     }
 
 
-    @NoCache
     @PUT
+    @Path("/{id}")
     @RolesAllowed({"user", "admin"})
     @Operation(
             summary = "Updates the file",
@@ -252,6 +252,8 @@ public class FileResource {
             )
     })
     public File update(
+            @PathParam("id") final UUID id,
+
             @Schema(
                     description = "The file data to be stored.",
                     required = true
@@ -259,8 +261,9 @@ public class FileResource {
             @NotNull final File input
     ) {
         try {
-            return service.update(input, identity.getPrincipal(), identity.getRoles());
+            return service.update(id, input, identity.getPrincipal(), identity.getRoles());
         } catch (SecurityException cause) {
+            log.warn(cause.getMessage(), cause);
             throw errorGenerator.throwHttpProblem(
                     Response.Status.FORBIDDEN,
                     "User has no write access to this file!",
@@ -268,37 +271,40 @@ public class FileResource {
                             "user", identity.getPrincipal().getName(),
                             "groups",identity.getRoles().stream()
                                     .collect(Collectors.joining(",", "{", "}")),
-                            "UUID", input.getMetadata().getUid().toString(),
+                            "UUID", id.toString(),
                             "NameSpace", input.getNameSpace(),
                             "Name", input.getName()
                     )
             );
         } catch (javax.persistence.EntityExistsException cause) {
+            log.warn(cause.getMessage(), cause);
             throw errorGenerator.throwHttpProblem(
                     Response.Status.CONFLICT,
                     "Either UUID or NameSpace+Name already taken",
                     Map.of(
-                            "uuid", input.getMetadata().getUid().toString(),
+                            "uuid", id.toString(),
                             "NameSpace", input.getNameSpace(),
                             "Name", input.getName()
                     )
             );
         } catch (PessimisticLockException cause) {
+            log.warn(cause.getMessage(), cause);
             throw errorGenerator.throwHttpProblem(
                     Response.Status.INTERNAL_SERVER_ERROR,
                     "The data set has been changed by another transaction",
                     Map.of(
-                            "uuid", input.getMetadata().getUid().toString(),
+                            "uuid", id.toString(),
                             "NameSpace", input.getNameSpace(),
                             "Name", input.getName()
                     )
             );
         } catch (RuntimeException cause) {
+            log.warn(cause.getMessage(), cause);
             throw errorGenerator.throwHttpProblem(
                     Response.Status.INTERNAL_SERVER_ERROR,
                     cause.getMessage(),
                     Map.of(
-                            "uuid", input.getMetadata().getUid().toString(),
+                            "uuid", id.toString(),
                             "NameSpace", input.getNameSpace(),
                             "Name", input.getName()
                     )
@@ -389,7 +395,6 @@ public class FileResource {
     }
 
 
-    @NoCache
     @DELETE
     @RolesAllowed({"user", "admin"})
     @Path("/{uid}")
@@ -425,7 +430,6 @@ public class FileResource {
 
     }
 
-    @NoCache
     @DELETE
     @RolesAllowed({"user", "admin"})
     @Path("/{nameSpace}/{name}")
@@ -486,6 +490,7 @@ public class FileResource {
         try {
             service.delete(nameSpace, name, identity.getPrincipal(), identity.getRoles());
         } catch (PessimisticLockException cause) {
+            log.warn(cause.getMessage(), cause);
             throw errorGenerator.throwHttpProblem(
                     Response.Status.INTERNAL_SERVER_ERROR,
                     "The data set has been changed by another transaction",
@@ -495,6 +500,7 @@ public class FileResource {
                     )
             );
         } catch (RuntimeException cause) {
+            log.warn(cause.getMessage(), cause);
             throw errorGenerator.throwHttpProblem(
                     Response.Status.INTERNAL_SERVER_ERROR,
                     cause.getMessage(),

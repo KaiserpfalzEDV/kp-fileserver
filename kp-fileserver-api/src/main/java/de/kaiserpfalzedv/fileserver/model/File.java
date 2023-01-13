@@ -2,7 +2,7 @@ package de.kaiserpfalzedv.fileserver.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.kaiserpfalzedv.commons.core.resources.HasMetadata;
-import de.kaiserpfalzedv.commons.core.resources.ResourcePointer;
+import de.kaiserpfalzedv.commons.core.resources.Resource;
 
 import javax.validation.constraints.NotNull;
 import java.util.Optional;
@@ -14,7 +14,8 @@ import java.util.Set;
  * @author klenkes74 {@literal <rlichti@kaiserpfalz-edv.de>}
  * @since 2.0.0  2023-01-07
  */
-public interface File extends ResourcePointer, HasMetadata {
+public interface File extends Resource<FileData>, HasMetadata {
+    String SELFLINK_BASE = "/api/file";
     String KIND = "File";
     String API_VERSION = "v1";
     String ANNOTATION_OWNER = "de.kaiserpfalz-edv.files/owner";
@@ -26,12 +27,12 @@ public interface File extends ResourcePointer, HasMetadata {
 
     String DEFAULT_PERMISSION = "222";
 
-    FileData getFile();
+    FileDescription getFile();
 
-    FileData getPreview();
+    FileDescription getPreview();
 
     @JsonIgnore
-    Optional<String> getOwner();
+    String getOwner();
 
     @JsonIgnore
     Optional<String> getGroup();
@@ -46,6 +47,11 @@ public interface File extends ResourcePointer, HasMetadata {
 
     default String getApiVersion() {
         return API_VERSION;
+    }
+
+    @Override
+    default String getSelfLink() {
+        return SELFLINK_BASE + "/" + getNameSpace() + "/" + getName();
     }
 
     /**
@@ -67,7 +73,7 @@ public interface File extends ResourcePointer, HasMetadata {
             return false;
         }
 
-        if (getOwner().isEmpty() || getOwner().get().equalsIgnoreCase(user)) {
+        if (getOwner().isEmpty() || getOwner().equalsIgnoreCase(user)) {
             return true;
         }
 

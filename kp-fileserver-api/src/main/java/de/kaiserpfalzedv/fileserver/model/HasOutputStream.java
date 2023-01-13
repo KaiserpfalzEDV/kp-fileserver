@@ -17,7 +17,7 @@
 
 package de.kaiserpfalzedv.fileserver.model;
 
-import de.kaiserpfalzedv.commons.core.api.WrappedException;
+import de.kaiserpfalzedv.commons.core.api.ExceptionWrap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,7 +37,7 @@ public interface HasOutputStream {
             try {
                 result.write(data);
             } catch (IOException e) {
-                throw new WrappedException(e);
+                throw new ExceptionWrap(e);
             }
 
             return result;

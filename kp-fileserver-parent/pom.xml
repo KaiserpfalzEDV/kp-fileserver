@@ -35,6 +35,33 @@
     <name>KP Fileserver :: Parent</name>
     <description>The parent of all kp-fileserver modules</description>
 
+
+    <scm>
+        <url>https://github.com/Paladins-Inn/kp-fileserver</url>
+        <connection>scm:git:git://github.com/Paladins-Inn/kp-fileserver.git</connection>
+        <developerConnection>scm:git:git@github.com:Paladins-Inn/kp-fileserver.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>kp-fileserver</id>
+            <name>GitHub Packages for kp-fileserver</name>
+            <url>https://maven.pkg.github.com/Paladins-Inn/kp-fileserver</url>
+        </repository>
+    </distributionManagement>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -62,4 +89,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+
 </project>
