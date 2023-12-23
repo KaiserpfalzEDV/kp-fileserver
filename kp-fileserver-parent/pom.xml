@@ -23,13 +23,13 @@
     <parent>
         <artifactId>kp-commons-parent</artifactId>
         <groupId>de.kaiserpfalz-edv.commons</groupId>
-        <version>3.0.0</version>
-        <relativePath>../../kp-commons/kp-commons-parent/pom.xml</relativePath>
+        <version>3.2.1</version>
+        <relativePath />
     </parent>
 
     <artifactId>kp-fileserver-parent</artifactId>
     <groupId>de.kaiserpfalz-edv.fileserver</groupId>
-    <version>3.0.0</version>
+    <version>4.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>KP Fileserver :: Parent</name>
@@ -67,7 +67,7 @@
             <dependency>
                 <groupId>de.kaiserpfalz-edv.commons</groupId>
                 <artifactId>kp-commons-bom</artifactId>
-                <version>3.0.0</version>
+                <version>3.2.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -89,6 +89,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-
 </project>
